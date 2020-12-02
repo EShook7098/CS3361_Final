@@ -97,6 +97,27 @@ def ParseLines(lines, filepath): #Use mmap CAREFULLY to read in a large file?
     print("Read time: " + str(time.time() - countTime))
     return matrix, lines 
   
+def ExtractCellState(matrix):    
+    width = len(matrix[0]) - 1 #More like.. position ending col without wrap of the appended final col
+    height = len(matrix)  - 1
+    writeMatrix = AllocateEmpty(width - 1, height - 1, 0)
+    print(len(writeMatrix), len(writeMatrix[0]))
+    for row in range(1, height):
+        for col in range(1, width):
+            writeMatrix[row - 1][col - 1] = matrix[row][col].state
+            
+    return writeMatrix
+
+def WriteMatrix(matrix, outputPath):
+    writeMatrix = ExtractCellState(matrix)
+    print(writeMatrix)
+    with open(outputPath, 'w') as file:
+        for line in writeMatrix:
+            file.write("".join(line) + "\n")
+    file.close()    
+  
+    
+  
 def SetCorners(matrix, height, width):
     #print("Position : " + str(height + 1) + ", " + str(width))
     matrix[0][0] = matrix[height - 1][width - 1] #Get lower right, set upper left
@@ -217,7 +238,7 @@ if __name__ == '__main__':
         
     PrintExpandedMatrix(matrix)
     PrintMatrix(matrix)
-        
+    WriteMatrix(matrix, outputPath)
     print(f"{inputPath}, {outputPath}, {threads}")
     print("Total Execution Time: " + str(time.time() - start))
     
