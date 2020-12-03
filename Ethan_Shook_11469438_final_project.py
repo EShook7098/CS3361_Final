@@ -9,8 +9,8 @@ import sys
 import getopt as go
 import time
 from multiprocessing import Pool, Array
-from multiprocessing import shared_memory, Process, Lock, cpu_count, current_process
-import multiprocessing
+#from multiprocessing import shared_memory, Process, Lock, cpu_count, current_process
+i#mport multiprocessing
 from Cell import ConvolveKinda, Cell, SetNextState
 from copy import deepcopy
 
@@ -235,7 +235,7 @@ def JoinMatrices(matrix, matrixArray):
         row +=1
 
 if __name__ == '__main__':
-    startTime = time.time()
+    startProgram = time.time()
     start = time.time()
     print("Project :: 11469438")
 
@@ -264,7 +264,6 @@ if __name__ == '__main__':
 
 
     matrix = GetMatrix(inputPath)
-    start = time.time()
 
     #ExpandBorders(matrix)
     #matrixArray = SplitMatrix(matrix, threads)
@@ -274,28 +273,27 @@ if __name__ == '__main__':
     #ConvolveKinda(matrixArray[1])
     #SetNextIteration(matrixArray[0])
     #SetNextIteration(matrixArray[1])
-    ExpandBorders(matrix)
     PrintMatrix(matrix)
-    print("Expansion: " + str(time.time() - start))
 
     if threads > 1:
-
+        ExpandBorders(matrix)
         matrixArray = SplitMatrix(matrix, threads)
 
 
         data = []
         for index in range(threads):
             data.append(matrixArray[index])
-            print("Matrix Array {} Length is {}".format(index,len(matrixArray[index])))
+            #print("Matrix Array {} Length is {}".format(index,len(matrixArray[index])))
+
         process_pool = Pool(threads)
-        for i in range(2):
+        for i in range(100):
             output = process_pool.map(ConvolveKinda, data)
             JoinMatrices(matrix, output)
             #SetNextIteration(matrix)
 
-            print("END OF ITERATION")
-            PrintMatrix(matrix)
-            PrintExpandedMatrix(matrix)
+            #print("END OF ITERATION")
+            #PrintMatrix(matrix)
+            #PrintExpandedMatrix(matrix)
 
 
         process_pool.close()
@@ -318,8 +316,8 @@ if __name__ == '__main__':
     #PrintExpandedMatrix(matrix)
     #PrintMatrix(matrix)
     WriteMatrix(matrix, outputPath)
-    print(f"{inputPath}, {outputPath}, {threads}")
-    print("Total Execution Time: " + str(time.time() - start))
+    #print(f"{inputPath}, {outputPath}, {threads}")
+    print("Total Execution Time: " + str(time.time() - startProgram))
 
 
     #time_step_0.dat

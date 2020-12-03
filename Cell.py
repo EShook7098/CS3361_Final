@@ -38,11 +38,9 @@ def SetNextState(matrix, rowIndex, colIndex, neighborSet):
 def ConvolveKinda(matrix):
     height = len(matrix) - 1 #Get outer indice
     width = len(matrix[0]) - 1
-    print("Height: " + str(height) + " Width: " + str(width))
     neighborSteps = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
 
     for row in range(1, height):
-        print("Convolved row {}".format(row))
         for col in range(1, width):
             SetNextState(matrix, row, col, neighborSteps)
     return matrix
