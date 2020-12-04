@@ -11,7 +11,7 @@ import time
 from multiprocessing import Pool, Array, Value, Manager
 #from multiprocessing import shared_memory, Process, Lock, cpu_count, current_process
 #import multiprocessing
-from Cell import ConvolveKinda, Cell, SetNextState
+from Cell import ConvolveKinda, Cell, SetNextState, ConvolveSerial
 from copy import deepcopy
 
 
@@ -131,7 +131,7 @@ def SetCols(matrix, height, width):
 
 def ExpandBorders(matrix):
     width = len(matrix[0]) - 1
-    height = len(matrix)  - 1#Get outer
+    height = len(matrix)  - 1 #Get outer
     SetCorners(matrix, height, width)
     matrix[0][1:width] = matrix[height - 1][1:width]
     matrix[height][1:width] = matrix[1][1:width]
@@ -275,7 +275,7 @@ if __name__ == '__main__':
     #SetNextIteration(matrixArray[1])
     #PrintMatrix(matrix)
     neighborSteps = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
-    if threads > 0:
+    if threads > 1:
         ExpandBorders(matrix)
 
 
@@ -286,27 +286,24 @@ if __name__ == '__main__':
             data.append([matrixArray[index], neighborSteps])
             #print("Matrix Array {} Length is {}".format(index,len(matrixArray[index])))
         process_pool = Pool(threads)
-        for i in range(100):
+        for i in range(1):
 
-            start = time.time()
-            output = process_pool.starmap(ConvolveKinda, data)
-            print("Total time: " + str(time.time() - start))
+            #start = time.time()
+            output = process_pool.map(ConvolveKinda, data)
+            #print("Map time: " + str(time.time() - start))
+            #start2 = time.time()
             JoinMatrices(matrix, output)
+            #print("Joining time: " + str(time.time() - start2))
             #SetNextIteration(matrix)
-
-            #print("END OF ITERATION")
-            #PrintMatrix(matrix)
-            #PrintExpandedMatrix(matrix)
-
 
         process_pool.close()
         process_pool.join()
     else:
         ExpandBorders(matrix)
-        for i in range(100):
+        for i in range(1):
 
             start = time.time()
-            ConvolveKinda(matrix, neighborSteps)
+            ConvolveSerial(matrix, neighborSteps)
             print("Convolved in: " + str(time.time() - start))
             SetNextIteration(matrix)
      #Beauty of it all being memory references
@@ -318,8 +315,8 @@ if __name__ == '__main__':
 
     #matrixArray = SplitMatrix(matrix, threads)
 
-    #PrintExpandedMatrix(matrix)
-    #PrintMatrix(matrix)
+    PrintExpandedMatrix(matrix)
+    PrintMatrix(matrix)
     WriteMatrix(matrix, outputPath)
     #print(f"{inputPath}, {outputPath}, {threads}")
     print("Total Execution Time: " + str(time.time() - startProgram))

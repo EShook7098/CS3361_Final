@@ -35,7 +35,25 @@ def SetNextState(matrix, rowIndex, colIndex, neighborSet):
 
     matrix[rowIndex][colIndex].SetNextState(count)
 
-def ConvolveKinda(matrix, neighborSteps):
+
+def ConvolveKinda(data):
+    matrix = data[0]
+    neighborSteps = data[1]
+
+    start = time.time()
+    height = len(matrix) - 1 #Get outer indice
+    width = len(matrix[0]) - 1
+
+    for row in range(1, height):
+        for col in range(1, width):
+            SetNextState(matrix, row, col, neighborSteps)
+
+    print("Convolved in: " + str(time.time() - start))
+    return matrix
+
+
+def ConvolveSerial(matrix, neighborSteps):
+
     start = time.time()
     height = len(matrix) - 1 #Get outer indice
     width = len(matrix[0]) - 1
