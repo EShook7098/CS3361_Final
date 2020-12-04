@@ -24,7 +24,40 @@ from copy import deepcopy
 
 #Also will support class functions - efficiency of these is to be seen
 
+class Cell:
+    __slots__ = 'state', 'nCount', 'nextState'
 
+    def __init__(self, s, ns):
+        self.state = s
+        self.nextState = ns
+
+
+    def SetNextIteration(self):
+        self.state = self.nextState
+        self.nextState = None
+
+    def SetNext(self, cellValue):
+        self.nextState = cellValue
+
+
+def GetNextState(cellValue, count):
+    if (cellValue == '.' and (count > 0 and count % 2 == 0)) or (cellValue == 'O' and count >= 2 and count <= 4):
+        return 'O'
+    else:
+        return '.'
+
+def SetNextState(flatNeighbors, char):
+    count = 0
+    #print(char)
+    #print(flatNeighbors)
+    for neighbor in flatNeighbors:
+        #print("State " + str(neighbor.state) + " | ", end = "")
+        if neighbor.state == 'O':
+            count += 1
+    #test = GetNextState(char[0], count)
+    #print(count, char)
+    #print(test)
+    return GetNextState(char, count)
 
 def Error(msg):
     print(msg)
@@ -292,8 +325,6 @@ if __name__ == '__main__':
 
         data = []
         #matrixArray = SplitMatrix(matrix, threads)
-        m = Manager()
-        x = m.Value('f', 0)
 #SetNextState(matrix, row, col, neighborSteps)
         #for index in range(threads):
             #data.append([matrixArray[index], neighborSteps])
@@ -306,7 +337,6 @@ if __name__ == '__main__':
                 for col in range(1, width):
                     block = []
                     SetBlock(matrix, row, col, block, neighborSet)
-                    #print(row, col)
 
                     matrix[row][col].SetNext(process_pool.starmap(SetNextState, ([block, matrix[row][col].state],))[0])
                     #print(process_pool.starmap(SetNextState, ([block, matrix[row][col].state],))[0])
@@ -323,7 +353,7 @@ if __name__ == '__main__':
             #SetNextIteration(matrix)
 
             #print("END OF ITERATION")
-        PrintMatrix(matrix)
+        #PrintMatrix(matrix)
             #PrintExpandedMatrix(matrix)
 
 
