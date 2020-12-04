@@ -4,7 +4,7 @@ Created on Thu Dec  3 13:26:27 2020
 
 @author: Ethan
 """
-
+import time
 
 class Cell:
     __slots__ = 'state', 'nCount', 'nextState'
@@ -13,34 +13,38 @@ class Cell:
         self.state = s
         self.nextState = ns
 
-    def SetNextState(self, nCount):
-        if (self.state == '.' and (nCount > 0 and nCount % 2 == 0)) or (self.state == 'O' and nCount >= 2 and nCount <= 4):
-            self.nextState = 'O'
-        else:
-            self.nextState = '.'
 
     def SetNextIteration(self):
         self.state = self.nextState
         self.nextState = None
 
-    def UpdateSelf(self, Cell):
-        self.state = Cell.nextState
+    def SetNext(self, cellValue):
+        self.nextState = cellValue
 
 
-def SetNextState(matrix, rowIndex, colIndex, neighborSet):
+def GetNextState(cellValue, count):
+    if (cellValue == '.' and (count > 0 and count % 2 == 0)) or (cellValue == 'O' and count >= 2 and count <= 4):
+        return 'O'
+    else:
+        return '.'
+
+def SetNextState(flatNeighbors, char):
     count = 0
-    for set in neighborSet:
-        if(matrix[rowIndex + set[0]][colIndex+set[1]].state == 'O'):
-            count +=1
+    #print(char)
+    #print(flatNeighbors)
+    for neighbor in flatNeighbors:
+        #print("State " + str(neighbor.state) + " | ", end = "")
+        if neighbor.state == 'O':
+            count += 1
+    #test = GetNextState(char[0], count)
+    print(count, char)
+    #print(test)
+    return GetNextState(char, count)
 
-    matrix[rowIndex][colIndex].SetNextState(count)
+def ConvolveKinda(matrix, neighborSteps):
+    start = time.time()
 
-def ConvolveKinda(matrix):
-    height = len(matrix) - 1 #Get outer indice
-    width = len(matrix[0]) - 1
-    neighborSteps = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
+    return SetNextState(matrix, row, col, neighborSteps)
 
-    for row in range(1, height):
-        for col in range(1, width):
-            SetNextState(matrix, row, col, neighborSteps)
-    return matrix
+    #print("Convolved in: " + str(time.time() - start))
+    #x.value += time.time() - start

@@ -8,9 +8,9 @@ Created on Wed Dec  2 13:12:58 2020
 import sys
 import getopt as go
 import time
-from multiprocessing import Pool, Array
+from multiprocessing import Pool, Array, Value, Manager
 #from multiprocessing import shared_memory, Process, Lock, cpu_count, current_process
-i#mport multiprocessing
+#import multiprocessing
 from Cell import ConvolveKinda, Cell, SetNextState
 from copy import deepcopy
 
@@ -61,12 +61,12 @@ def ParseLines(lines, filepath): #Use mmap CAREFULLY to read in a large file?
 
 
     matrix = AllocateEmpty(width, height, 2)
-    print(matrix)
+    #print(matrix)
     validChars = ['.', 'O', '\n']
     rowNum = 1
     countTime = time.time()
     for line in lines:
-        print(rowNum)
+        #print(rowNum)
         for colNum in range(0, width):
             char = line[colNum]
 
@@ -88,7 +88,7 @@ def ExtractCellState(matrix):
     width = len(matrix[0]) - 1 #More like.. position ending col without wrap of the appended final col
     height = len(matrix)  - 1
     writeMatrix = AllocateEmpty(width - 1, height - 1, 0)
-    print(len(writeMatrix), len(writeMatrix[0]))
+    #print(len(writeMatrix), len(writeMatrix[0]))
     for row in range(1, height):
         for col in range(1, width):
             writeMatrix[row - 1][col - 1] = matrix[row][col].state
@@ -97,7 +97,7 @@ def ExtractCellState(matrix):
 
 def WriteMatrix(matrix, outputPath):
     writeMatrix = ExtractCellState(matrix)
-    print(writeMatrix)
+    #print(writeMatrix)
     with open(outputPath, 'w') as file:
         for line in writeMatrix:
             file.write("".join(line) + "\n")
@@ -111,7 +111,7 @@ def SetNextIteration(matrix):
 
     for row in range(1, height):
         for col in range(1, width):
-            print(row, col)
+            #print(row, col)
             matrix[row][col].SetNextIteration()
 
 
@@ -192,6 +192,7 @@ def SplitMatrix(matrix, threads):
     matrixArray[threads - 1] = matrix[start:stop + 1]
     return matrixArray
 
+
 #def ReattachMatrices(matrixArray):
 
     #for matrix in range(len(matrixArray)):
@@ -204,6 +205,7 @@ def JoinMatrices(matrix, matrixArray):
     row = 1
     #print("start")
     for matriceRow in matrixArray[0][1:-1]:
+        #print(matriceRow)
         col = 1
         for cell in matriceRow[1:-1]:
             #print(matrix[row][col].state, end = "")
@@ -233,6 +235,14 @@ def JoinMatrices(matrix, matrixArray):
             col += 1
         #print("\n")
         row +=1
+def SetBlock(matrix, row, col, block, neighborSet):
+
+    iter = 0
+    for rowB in range(8):
+            block.append(matrix[row + neighborSet[iter][0]][col + neighborSet[iter][1]])
+            #print(matrix[row + neighborSet[iter][0]][col + neighborSet[iter][1]].state)
+            print(row + neighborSet[iter][0], col + neighborSet[iter][1], matrix[row + neighborSet[iter][0]][col + neighborSet[iter][1]].state)
+            iter += 1
 
 if __name__ == '__main__':
     startProgram = time.time()
@@ -273,26 +283,47 @@ if __name__ == '__main__':
     #ConvolveKinda(matrixArray[1])
     #SetNextIteration(matrixArray[0])
     #SetNextIteration(matrixArray[1])
+    ExpandBorders(matrix)
     PrintMatrix(matrix)
-
-    if threads > 1:
-        ExpandBorders(matrix)
-        matrixArray = SplitMatrix(matrix, threads)
+    PrintExpandedMatrix(matrix)
+    neighborSet = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
+    if threads > 0:
 
 
         data = []
-        for index in range(threads):
-            data.append(matrixArray[index])
+        #matrixArray = SplitMatrix(matrix, threads)
+        m = Manager()
+        x = m.Value('f', 0)
+#SetNextState(matrix, row, col, neighborSteps)
+        #for index in range(threads):
+            #data.append([matrixArray[index], neighborSteps])
             #print("Matrix Array {} Length is {}".format(index,len(matrixArray[index])))
-
         process_pool = Pool(threads)
         for i in range(100):
-            output = process_pool.map(ConvolveKinda, data)
-            JoinMatrices(matrix, output)
+            height = len(matrix) - 1 #Get outer indice
+            width = len(matrix[0]) - 1
+            for row in range(1, height):
+                for col in range(1, width):
+                    block = []
+                    SetBlock(matrix, row, col, block, neighborSet)
+                    #print(row, col)
+
+                    matrix[row][col].SetNext(process_pool.starmap(SetNextState, ([block, matrix[row][col].state],))[0])
+                    #print(process_pool.starmap(SetNextState, ([block, matrix[row][col].state],))[0])
+            for row in range(1, height):
+                for col in range(1, height):
+                    matrix[row][col].SetNextIteration()
+            start = time.time()
+            #output = process_pool.starmap(ConvolveKinda, data)
+            print("Total time: " + str(time.time() - start))
+            #print("Inner time: " + str(x))
+            #JoinMatrices(matrix, output)
+            #print(output)
+            #x.value = 0
             #SetNextIteration(matrix)
 
             #print("END OF ITERATION")
-            #PrintMatrix(matrix)
+        PrintMatrix(matrix)
             #PrintExpandedMatrix(matrix)
 
 
@@ -301,9 +332,11 @@ if __name__ == '__main__':
     else:
         ExpandBorders(matrix)
         for i in range(100):
-            ConvolveKinda(matrix)
-            SetNextIteration(matrix)
 
+            #start = time.time()
+            ConvolveKinda(matrix, neighborSteps)
+            #print("Convolved in: " + str(time.time() - start))
+            SetNextIteration(matrix)
      #Beauty of it all being memory references
 
 
