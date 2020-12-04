@@ -24,40 +24,7 @@ from copy import deepcopy
 
 #Also will support class functions - efficiency of these is to be seen
 
-class Cell:
-    __slots__ = 'state', 'nCount', 'nextState'
 
-    def __init__(self, s, ns):
-        self.state = s
-        self.nextState = ns
-
-
-    def SetNextIteration(self):
-        self.state = self.nextState
-        self.nextState = None
-
-    def SetNext(self, cellValue):
-        self.nextState = cellValue
-
-
-def GetNextState(cellValue, count):
-    if (cellValue == '.' and (count > 0 and count % 2 == 0)) or (cellValue == 'O' and count >= 2 and count <= 4):
-        return 'O'
-    else:
-        return '.'
-
-def SetNextState(flatNeighbors, char):
-    count = 0
-    #print(char)
-    #print(flatNeighbors)
-    for neighbor in flatNeighbors:
-        #print("State " + str(neighbor.state) + " | ", end = "")
-        if neighbor.state == 'O':
-            count += 1
-    #test = GetNextState(char[0], count)
-    #print(count, char)
-    #print(test)
-    return GetNextState(char, count)
 
 def Error(msg):
     print(msg)
@@ -225,7 +192,6 @@ def SplitMatrix(matrix, threads):
     matrixArray[threads - 1] = matrix[start:stop + 1]
     return matrixArray
 
-
 #def ReattachMatrices(matrixArray):
 
     #for matrix in range(len(matrixArray)):
@@ -238,7 +204,6 @@ def JoinMatrices(matrix, matrixArray):
     row = 1
     #print("start")
     for matriceRow in matrixArray[0][1:-1]:
-        #print(matriceRow)
         col = 1
         for cell in matriceRow[1:-1]:
             #print(matrix[row][col].state, end = "")
@@ -268,19 +233,11 @@ def JoinMatrices(matrix, matrixArray):
             col += 1
         #print("\n")
         row +=1
-def SetBlock(matrix, row, col, block, neighborSet):
-
-    iter = 0
-    for rowB in range(8):
-            block.append(matrix[row + neighborSet[iter][0]][col + neighborSet[iter][1]])
-            #print(matrix[row + neighborSet[iter][0]][col + neighborSet[iter][1]].state)
-            print(row + neighborSet[iter][0], col + neighborSet[iter][1], matrix[row + neighborSet[iter][0]][col + neighborSet[iter][1]].state)
-            iter += 1
 
 if __name__ == '__main__':
     startProgram = time.time()
     start = time.time()
-    print("Project :: 11469438")
+    print("Project :: R11469438")
 
     inputPath = -1
     outputPath = -1
@@ -316,44 +273,29 @@ if __name__ == '__main__':
     #ConvolveKinda(matrixArray[1])
     #SetNextIteration(matrixArray[0])
     #SetNextIteration(matrixArray[1])
-    ExpandBorders(matrix)
-    PrintMatrix(matrix)
-    PrintExpandedMatrix(matrix)
-    neighborSet = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
+    #PrintMatrix(matrix)
+    neighborSteps = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)]
     if threads > 0:
+        ExpandBorders(matrix)
 
 
         data = []
-        #matrixArray = SplitMatrix(matrix, threads)
-#SetNextState(matrix, row, col, neighborSteps)
-        #for index in range(threads):
-            #data.append([matrixArray[index], neighborSteps])
+        matrixArray = SplitMatrix(matrix, threads)
+
+        for index in range(threads):
+            data.append([matrixArray[index], neighborSteps])
             #print("Matrix Array {} Length is {}".format(index,len(matrixArray[index])))
         process_pool = Pool(threads)
         for i in range(100):
-            height = len(matrix) - 1 #Get outer indice
-            width = len(matrix[0]) - 1
-            for row in range(1, height):
-                for col in range(1, width):
-                    block = []
-                    SetBlock(matrix, row, col, block, neighborSet)
 
-                    matrix[row][col].SetNext(process_pool.starmap(SetNextState, ([block, matrix[row][col].state],))[0])
-                    #print(process_pool.starmap(SetNextState, ([block, matrix[row][col].state],))[0])
-            for row in range(1, height):
-                for col in range(1, height):
-                    matrix[row][col].SetNextIteration()
             start = time.time()
-            #output = process_pool.starmap(ConvolveKinda, data)
+            output = process_pool.starmap(ConvolveKinda, data)
             print("Total time: " + str(time.time() - start))
-            #print("Inner time: " + str(x))
-            #JoinMatrices(matrix, output)
-            #print(output)
-            #x.value = 0
+            JoinMatrices(matrix, output)
             #SetNextIteration(matrix)
 
             #print("END OF ITERATION")
-        #PrintMatrix(matrix)
+            #PrintMatrix(matrix)
             #PrintExpandedMatrix(matrix)
 
 
@@ -363,9 +305,9 @@ if __name__ == '__main__':
         ExpandBorders(matrix)
         for i in range(100):
 
-            #start = time.time()
+            start = time.time()
             ConvolveKinda(matrix, neighborSteps)
-            #print("Convolved in: " + str(time.time() - start))
+            print("Convolved in: " + str(time.time() - start))
             SetNextIteration(matrix)
      #Beauty of it all being memory references
 

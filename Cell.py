@@ -13,38 +13,36 @@ class Cell:
         self.state = s
         self.nextState = ns
 
+    def SetNextState(self, nCount):
+        if (self.state == '.' and (nCount > 0 and nCount % 2 == 0)) or (self.state == 'O' and nCount >= 2 and nCount <= 4):
+            self.nextState = 'O'
+        else:
+            self.nextState = '.'
 
     def SetNextIteration(self):
         self.state = self.nextState
         self.nextState = None
 
-    def SetNext(self, cellValue):
-        self.nextState = cellValue
+    def UpdateSelf(self, Cell):
+        self.state = Cell.nextState
 
 
-def GetNextState(cellValue, count):
-    if (cellValue == '.' and (count > 0 and count % 2 == 0)) or (cellValue == 'O' and count >= 2 and count <= 4):
-        return 'O'
-    else:
-        return '.'
-
-def SetNextState(flatNeighbors, char):
+def SetNextState(matrix, rowIndex, colIndex, neighborSet):
     count = 0
-    #print(char)
-    #print(flatNeighbors)
-    for neighbor in flatNeighbors:
-        #print("State " + str(neighbor.state) + " | ", end = "")
-        if neighbor.state == 'O':
+    for set in neighborSet:
+        if(matrix[rowIndex + set[0]][colIndex+set[1]].state == 'O'):
             count += 1
-    #test = GetNextState(char[0], count)
-    print(count, char)
-    #print(test)
-    return GetNextState(char, count)
+
+    matrix[rowIndex][colIndex].SetNextState(count)
 
 def ConvolveKinda(matrix, neighborSteps):
     start = time.time()
+    height = len(matrix) - 1 #Get outer indice
+    width = len(matrix[0]) - 1
 
-    return SetNextState(matrix, row, col, neighborSteps)
+    for row in range(1, height):
+        for col in range(1, width):
+            SetNextState(matrix, row, col, neighborSteps)
 
-    #print("Convolved in: " + str(time.time() - start))
-    #x.value += time.time() - start
+    print("Convolved in: " + str(time.time() - start))
+    return matrix
